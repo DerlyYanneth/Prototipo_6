@@ -10,24 +10,39 @@ navigator.mediaDevices.getUserMedia({ video: true })
         console.error('Error accessing media devices.', err);
     });
 
-const ws = new WebSocket(`ws://${window.location.host}/ws`);
-
-ws.onmessage = function(event) {
-    const response = document.createElement('div');
-    response.textContent = `Médico AI: ${event.data}`;
-    responses.appendChild(response);
-};
-
 function sendMessage() {
     const message = input.value;
-    ws.send(message);
-    const userMessage = document.createElement('div');
-    userMessage.textContent = `Usuario: ${message}`;
-    responses.appendChild(userMessage);
+
+    // Enviar mensaje al servidor utilizando fetch en lugar de WebSockets
+    fetch('/send-message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Mostrar la respuesta del servidor en la interfaz de usuario
+        const userMessage = document.createElement('div');
+        userMessage.textContent = `Usuario: ${message}`;
+        responses.appendChild(userMessage);
+
+        const response = document.createElement('div');
+        response.textContent = `Médico AI: ${data.response}`;
+        responses.appendChild(response);
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+    });
+
     input.value = '';
 }
-
-
 //otra opción
 /*
 $.ajax({

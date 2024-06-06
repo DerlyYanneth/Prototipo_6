@@ -95,59 +95,5 @@
         </div>
     </div>
     <script src="static/script.js"></script>
-    <script>
-        document.getElementById('sendButton').addEventListener('click', async () => {
-            const inputBox = document.getElementById('inputBox');
-            const chatbox = document.getElementById('chatbox');
-            const userMessage = inputBox.value;
-
-            if (userMessage.trim() === '') return;
-
-            const userDiv = document.createElement('div');
-            userDiv.className = 'user';
-            userDiv.textContent = userMessage;
-            chatbox.appendChild(userDiv);
-
-            inputBox.value = '';
-
-            const url = 'http://localhost:11434/api/generate'; 
-            const data = {
-                prompt: userMessage,
-                max_tokens: 150,
-                temperature: 0.7
-            };
-            console.log("Sending data to server:", data);
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.statusText}`);
-                }
-
-                const result = await response.json();
-                const botMessage = result.choices[0].text.trim();
-
-                const botDiv = document.createElement('div');
-                botDiv.className = 'bot';
-                botDiv.textContent = botMessage;
-                chatbox.appendChild(botDiv);
-
-                chatbox.scrollTop = chatbox.scrollHeight;
-
-            } catch (error) {
-                console.error('Error:', error);
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'bot';
-                errorDiv.textContent = 'Ocurrio un error al obtener la respuesta de la IA.';
-                chatbox.appendChild(errorDiv);
-            }
-        });
-    </script>
 </body>
 </html>
