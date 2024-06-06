@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Consultorio Medico Virtual</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://tse4.mm.bing.net/th?id=OIP.5JAMBqiIZbMaaWTZOYZ3KwHaHa&pid=Api&P=0&h=180" type="image/png"> <!-- Favicon link -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: url('https://png.pngtree.com/thumb_back/fw800/back_our/20190625/ourmid/pngtree-simple-and-technical-style-medical-safety-banner-image_261153.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+        }
+        #logo-container {
+            margin-bottom: 20px;
+        }
+        #logo {
+            max-width: 150px;
+        }
+        #content {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 900px;
+        }
+        #video-container, #chat-container {
+            flex: 1;
+            margin: 10px;
+        }
+        #video-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #video {
+            width: 100%;
+            max-width: 300px;
+        }
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            flex: 2;
+        }
+        #chatbox {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .user, .bot {
+            margin: 5px 0;
+        }
+        .user {
+            text-align: right;
+        }
+        .bot {
+            text-align: left;
+        }
+        #inputBox, #sendButton {
+            width: calc(100% - 22px);
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #sendButton {
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bienvenido al Consultorio Medico Virtual!!</h1>
+    <div id="content">
+        <div id="video-container">
+            <video id="video" autoplay></video>
+        </div>
+        <div id="chat-container">
+            <div id="chatbox"></div>
+            <input type="text" id="inputBox" placeholder="Escribe tu pregunta aqui..." class="form-control">
+            <button id="sendButton" class="btn btn-primary">Enviar</button>
+        </div>
+    </div>
+    <script src="static/script.js"></script>
+    <script>
+        document.getElementById('sendButton').addEventListener('click', async () => {
+            const inputBox = document.getElementById('inputBox');
+            const chatbox = document.getElementById('chatbox');
+            const userMessage = inputBox.value;
+
+            if (userMessage.trim() === '') return;
+
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user';
+            userDiv.textContent = userMessage;
+            chatbox.appendChild(userDiv);
+
+            inputBox.value = '';
+
+            const url = 'http://localhost:11434/api/generate'; 
+            const data = {
+                prompt: userMessage,
+                max_tokens: 150,
+                temperature: 0.7
+            };
+            console.log("Sending data to server:", data);
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const botMessage = result.choices[0].text.trim();
+
+                const botDiv = document.createElement('div');
+                botDiv.className = 'bot';
+                botDiv.textContent = botMessage;
+                chatbox.appendChild(botDiv);
+
+                chatbox.scrollTop = chatbox.scrollHeight;
+
+            } catch (error) {
+                console.error('Error:', error);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'bot';
+                errorDiv.textContent = 'Ocurrio un error al obtener la respuesta de la IA.';
+                chatbox.appendChild(errorDiv);
+            }
+        });
+    </script>
+</body>
+</html>
